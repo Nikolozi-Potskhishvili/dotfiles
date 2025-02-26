@@ -43,22 +43,10 @@
     LC_TIME = "ka_GE.UTF-8";
   };
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
+
 
   sound.enable = true;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    jack.enable = true;
-  };
-  
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nika = {
     isNormalUser = true;
@@ -69,27 +57,44 @@
   };
 
   # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.nvidia.acceptLicense = true;
+  nixpkgs.config = {
+  	allowUnfree = true;
+  	nvidia.acceptLicense = true;
+	i686-linux = true;
+  };
+  
   
   services.xserver = {
     enable = true;
-    desktopManager = {
-      xterm.enable = false;
+
+
+    xkb = {
+      layout = "us,ru,ge";    
+      variant = ",,";        
+      options = "grp:win_space_toggle";
     };
-    displayManager = {
-      defaultSession = "none+i3";
-    };
+    
+
+   # displayManager = {
+   # };
+
     windowManager.i3 = {
       enable = true;
       extraPackages = with pkgs; [
-       	dmenu 
-	i3status
-	i3lock
-	i3blocks
+        dmenu
+        i3status
+        i3lock
+        i3blocks
       ];
-    };
+    };  
   };
+
+  services.displayManager = {
+      defaultSession = "none+i3";  # Sets i3 as the default session
+  };
+
+  xdg.portal.config.common.default = "*"; # Maintain pre-1.17 portal behavior
+
   hardware = {
     opengl.enable = true;
   };
@@ -113,7 +118,6 @@
 
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
-
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -133,6 +137,8 @@
     rustup
     gcc
     glibc
+    curl
+    libnsl
     binutils
     go
     git
@@ -152,7 +158,33 @@
     luajitPackages.luarocks-nix
     rocmPackages_5.llvm.clang-unwrapped
     lmms
+    openjdk17
+    wine
+    transmission
+    dolphin
+    mpv
+    unrar-free
+    qbittorrent
+    discord
+    flameshot
+    inetutils
+    signal-desktop
   ];
+	
+  virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members =  ["nika"];
+  virtualisation.virtualbox.host.enableExtensionPack = true;
+  virtualisation.virtualbox.guest.enable = true;
+
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
+
+  hardware.pulseaudio.enable = false;
 
   services.postgresql.enable = true;
   services.postgresql.package = pkgs.postgresql_14;
@@ -188,7 +220,8 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
- 
+
+
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
